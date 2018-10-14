@@ -24,6 +24,23 @@ class Tablero {
 		int check();
 };
 
+class NeuralNet {
+	private:
+		int nLayers;
+		int sizeLayer;
+		int sizeInput;
+		vector< vector<int> > weights;
+		vector<int> bias;
+		vector<int> output;
+	public:
+		NeuralNet(int sizeL, int sizeI);
+		NeuralNet(vector< vector<int> > w, vector<int> bias);
+		~NeuralNet();
+		void random();
+		void show();
+		void start(vector<int> in);
+};
+
 int main(int argc, char **argv)
 {
 	bool out = 0;
@@ -37,6 +54,21 @@ int main(int argc, char **argv)
 	};
 	
 	Tablero tablero;
+	NeuralNet network(5, 9);
+	
+	vector<int> vec;
+	vec.push_back(0);
+	vec.push_back(1);
+	vec.push_back(2);
+	vec.push_back(3);
+	vec.push_back(4);
+	vec.push_back(5);
+	vec.push_back(6);
+	vec.push_back(7);
+	vec.push_back(8);
+	
+	network.start(vec);
+	network.show();
 	
 	while(!out)
 	{
@@ -281,6 +313,65 @@ int Tablero::check()
 	
 	winner = -1;
 	return winner;
+}
+
+NeuralNet::NeuralNet(int sizeL, int sizeI)
+{
+	nLayers = 1;
+	sizeLayer = sizeL;
+	sizeInput = sizeI;
+	random();
+}
+
+//NeuralNet::NeuralNet(vector< vector<int> > w, vector<int> bias);
+
+NeuralNet::~NeuralNet(){}
+
+void NeuralNet::random()
+{
+	// Borro el vector
+	weights.erase(weights.begin(),weights.end());
+	
+	// Inicializo el vector
+	vector<int> weights_aux;
+	for(int i=0; i<sizeLayer; i++)
+	{
+		for(int j=0; j<sizeInput; j++)
+			weights_aux.push_back(1);
+		weights.push_back(weights_aux);
+	}
+}
+
+void NeuralNet::show()
+{
+	// Show weights
+	for(int i=0; i<sizeLayer; i++)
+	{
+		for(int j=0; j<sizeInput; j++)
+			cout << weights[i][j] << "\t";
+		cout << endl;
+	}
+	
+	// Show output
+	for(int i=0; i<sizeLayer; i++)
+		cout << output[i] << endl;
+	
+}
+
+void NeuralNet::start(vector<int> in)
+{
+	// out = f(w*in + b)
+	
+	// Borro el vector output
+	output.erase(output.begin(),output.end());
+	
+	for(int i=0; i<sizeLayer; i++)
+	{
+		int aux = 0;
+		for(int j=0; j<sizeInput; j++)
+			aux = weights[i][j]+in[j] + aux;
+		output.push_back(aux);
+	}
 }
 
 void ClearScreen()
