@@ -6,37 +6,23 @@ const int size = 3;
 int estado = 0;
 
 // Funciones
+void reset(int array[][size]);
+void show(int array[][size]);
+void write(bool player, int array[][size]);
+int check(int array[][size]);
 void ClearScreen();
-
-// Clases
-class Tablero {
-	private:
-		int malla[size][size];
-		int winner;
-	public:
-		Tablero();
-		Tablero(int array[size][size]);
-		~Tablero();
-		void initialize(int array[size][size]);
-		void reset();
-		void show();
-		void write(bool player);
-		int check();
-};
 
 int main(int argc, char **argv)
 {
 	bool out = 0;
 	bool player = 0;
 	int winner = -1;
-	
+	int answer = 0;
 	int malla[size][size] = {
-		{0,-1,1},
-		{1,1,0},
+		{0,-1,0},
+		{1,0,0},
 		{0,1,1}
 	};
-	
-	Tablero tablero;
 	
 	while(!out)
 	{
@@ -44,12 +30,9 @@ int main(int argc, char **argv)
 		switch(estado)
 		{
 			case 0:		// reset
-				//ClearScreen();
-				tablero.reset();
-				//tablero.initialize(malla);
-				player = 0;
-				winner = -1;
-				tablero.show();
+				ClearScreen();
+				reset(malla);
+				show(malla);
 				estado = 1;
 				break;
 				
@@ -57,16 +40,10 @@ int main(int argc, char **argv)
 				cout << "Empieza el juego" << endl;
 				while(estado == 1)
 				{
-					cout << "-- Turno de ";
-					if(player)
-						cout << "x:";
-					else
-						cout << "o:";
-					cout << " --" << endl;
-					tablero.write(player);
-					player = !player;	// Cambio de jugador
-					tablero.show();
-					winner = tablero.check();
+					player = !player;
+					write(player, malla);
+					show(malla);
+					winner = check(malla);
 					if(winner!=-1)
 						estado = 2;
 				}
@@ -76,34 +53,19 @@ int main(int argc, char **argv)
 				switch(winner)
 				{
 					case 0:
-						cout << "#########################" << endl;
-						cout << "#\t";
-						cout << "Gano o";
-						cout << "\t\t#" << endl;
-						cout << "#########################" << endl;
+						cout << "Gano o" << endl;
 						break;
 					case 1:
-						cout << "#########################" << endl;
-						cout << "#\t";
-						cout << "Gano x";
-						cout << "\t\t#" << endl;
-						cout << "#########################" << endl;
+						cout << "Gano x" << endl;
 						break;
 					default:
-						cout << "#########################" << endl;
-						cout << "#   ";
-						cout << "Partida terminada";
-						cout << "   #" << endl;
-						cout << "#########################" << endl;
+						cout << "Partida terminada" << endl;
 						break;
 				}
-				
-				cout << endl;
 				estado = 3;
 				break;
 				
 			default:	// exit
-				int answer = 0;
 				cout << "Se acabo el juego" << endl;
 				cout << "¿Quieres jugar otra partida? (1->Si, 0->No)" << endl;
 				cin >> answer;
@@ -116,39 +78,19 @@ int main(int argc, char **argv)
 }
 
 // Funciones
-Tablero::Tablero()
-{
-	reset();
-	winner = -1;
-}
-
-Tablero::Tablero(int array[size][size])
-{
-	initialize(array);
-}
-
-Tablero::~Tablero(){}
-
-void Tablero::initialize(int array[size][size])
+void reset(int array[][size])
 {
 	for(int i=0; i<size; i++)
 		for(int j=0; j<size; j++)
-			malla[i][j] = array[i][j];
+			array[i][j] = -1;
 }
 
-void Tablero::reset()
-{
-	for(int i=0; i<size; i++)
-		for(int j=0; j<size; j++)
-			malla[i][j] = -1;
-}
-
-void Tablero::show()
+void show(int array[][size])
 {
 	char array_show[size][size];
 	for(int i=0; i<size; i++)
 		for(int j=0; j<size; j++)
-			switch(malla[i][j])
+			switch(array[i][j])
 			{
 				case 0:
 					array_show[i][j] = 'o';
@@ -159,7 +101,13 @@ void Tablero::show()
 				default:
 					array_show[i][j] = ' ';
 			}
-
+	/*
+	// Raw array
+	cout << endl;
+	for(int i=0; i<size; i++)
+		cout << "\t" << array[i][0] << " | " << array[i][1] << " | " << array[i][2] << endl;
+	cout << endl;
+	*/
 	// Arranged array
 	cout << endl;
 	for(int i=0; i<size; i++)
@@ -167,12 +115,12 @@ void Tablero::show()
 	cout << endl;
 }
 
-void Tablero::write(bool player)
+void write(bool player, int array[][size])
 {
 	int row = -1;
 	int col = -1;
 	bool again = 1;
-	while(again == 1)
+	while(again==1)
 	{
 		row = -1;
 		col = -1;
@@ -186,101 +134,85 @@ void Tablero::write(bool player)
 			cout << "Elige columna: ";
 			cin >> col;
 		}
-		if(malla[row-1][col-1]==-1)
+		if(array[row-1][col-1]==-1)
 			again = 0;
 		else
 			cout << "Ya hay una ficha, prueba otra vez" << endl;
 	}
-	malla[row-1][col-1] = player;
+	array[row-1][col-1] = player;
 }
 
-int Tablero::check()
+int check(int array[][size])
 {
-	int winner_check;	// Winner: Indica la ficha ganadora
-						// -1 -> No hay ganador
-						//  0 -> Ganador o
-						//  1 -> Ganador x
-						//  2 -> Tablero completo
+	int winner;		// Indica la ficha ganadora
+					// -1 -> No hay ganador
+					// 0  -> Ganador o
+					// 1  -> Ganador x
+					// 2  -> Tablero completo
 	bool win = 0;	// Indica si hay victoria
 	
 	// Comprobacion filas horizontales
 	for(int i=0; i<size; i++)
 	{
-		if(malla[i][0]!=-1)
+		if(array[i][0]!=-1)
 		{
-			winner_check = malla[i][0];
+			winner = array[i][0];
 			win = 1;
 			for(int j=1; j<size;j++)	// Compruebo por toda la fila si alguna celda no corresponde con la primera
-				if(malla[i][j] != winner_check)
+				if(array[i][j] != winner)
 					win = 0;
 		}
 		if(win)
-		{
-			winner = winner_check;
 			return winner;
-		}
 	}
 	
 	// Comprobacion filas verticales
 	for(int j=0; j<size; j++)
 	{
-		if(malla[0][j]!=-1)
+		if(array[0][j]!=-1)
 		{
-			winner_check = malla[0][j];
+			winner = array[0][j];
 			win = 1;
 			for(int i=1; i<size;i++)	// Compruebo por toda la fila si alguna celda no corresponde con la primera
-				if(malla[i][j] != winner_check)
+				if(array[i][j] != winner)
 					win = 0;
 		}
 		if(win)
-		{
-			winner = winner_check;
 			return winner;
-		}
 	}
 	
 	// Comprobacion filas diagonales
-	if(malla[0][0]!=-1)
+	if(array[0][0]!=-1)
 	{
 		win = 1;
-		winner_check = malla[0][0];
+		winner = array[0][0];
 		for(int i=1; i<size;i++)
-			if(malla[i][i] != winner_check)
+			if(array[i][i] != winner)
 				win = 0;
 	}
 	if(win)
-	{
-		winner = winner_check;
 		return winner;
-	}
-	if(malla[0][size-1]!=-1)
+	if(array[0][size-1]!=-1)
 	{
 		win = 1;
-		winner_check = malla[0][size-1];
+		winner = array[0][size-1];
 		for(int i=1; i<size;i++)
-			if(malla[i][size-1-i] != winner_check)
+			if(array[i][size-1-i] != winner)
 				win = 0;
 	}
 	if(win)
-	{
-		winner = winner_check;
 		return winner;
-	}
 	
 	// Comprobacion tablero completo
 	bool full = 1;
 	for(int i=0; i<size; i++)
 		for(int j=0; j<size; j++)
-			if(malla[i][j]==-1)
+			if(array[i][j]==-1)
 				full = 0;
 	if(full==1)
-	{
-		winner = 2;
-		return winner;
-	}
+		return 2;
 	
-	winner = -1;
-	return winner;
+	return -1;
 }
 
 void ClearScreen()
