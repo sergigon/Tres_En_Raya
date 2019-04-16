@@ -29,9 +29,10 @@ class NeuralNet {
 		int nLayers;
 		int sizeLayer;
 		int sizeInput;
-		vector< vector<int> > weights;
-		vector<int> bias;
-		vector<int> output;
+		vector< vector<float> > weights;
+		vector<float> bias;
+		vector<float> input;
+		vector<float> output;
 	public:
 		NeuralNet(int sizeL, int sizeI);
 		NeuralNet(vector< vector<int> > w, vector<int> bias);
@@ -39,6 +40,7 @@ class NeuralNet {
 		void random();
 		void show();
 		void start(vector<int> in);
+		void start(int array[size][size]);
 };
 
 int main(int argc, char **argv)
@@ -54,7 +56,7 @@ int main(int argc, char **argv)
 	};
 	
 	Tablero tablero;
-	NeuralNet network(5, 9);
+	NeuralNet network(2, 9);
 	
 	vector<int> vec;
 	vec.push_back(0);
@@ -67,7 +69,7 @@ int main(int argc, char **argv)
 	vec.push_back(7);
 	vec.push_back(8);
 	
-	network.start(vec);
+	network.start(malla);
 	network.show();
 	
 	while(!out)
@@ -329,15 +331,18 @@ NeuralNet::~NeuralNet(){}
 
 void NeuralNet::random()
 {
+	srand(time(NULL)); /* seed random number generator */
+	
 	// Borro el vector
 	weights.erase(weights.begin(),weights.end());
 	
 	// Inicializo el vector
-	vector<int> weights_aux;
+	vector<float> weights_aux;
 	for(int i=0; i<sizeLayer; i++)
 	{
+		weights_aux.erase(weights_aux.begin(),weights_aux.end());
 		for(int j=0; j<sizeInput; j++)
-			weights_aux.push_back(1);
+			weights_aux.push_back(float(rand() % 11)/10);
 		weights.push_back(weights_aux);
 	}
 }
@@ -351,27 +356,56 @@ void NeuralNet::show()
 			cout << weights[i][j] << "\t";
 		cout << endl;
 	}
+	cout << endl;
+	
+	// Show input
+	for(int i=0; i<input.size(); i++)
+		cout << input[i] << endl;
+	cout << endl;
 	
 	// Show output
-	for(int i=0; i<sizeLayer; i++)
+	for(int i=0; i<output.size(); i++)
 		cout << output[i] << endl;
+	cout << endl;
 	
 }
 
 void NeuralNet::start(vector<int> in)
 {
+	if(in.size()!=sizeInput)
+	{
+		cout << "El tamaño del vector input no coincide con el de la red neuronal" << endl;
+		cout << "Por favor, introduce un un vector de tamaño " << sizeInput << endl;
+		cout << endl;
+		return;
+	}
+	
 	// out = f(w*in + b)
 	
-	// Borro el vector output
+	// Borro el vector input y output
 	output.erase(output.begin(),output.end());
+	input.erase(input.begin(),input.end());
+	
+	// Completo vector input
+	for(int i=0; i<sizeInput; i++)
+		input.push_back(in[i]);
 	
 	for(int i=0; i<sizeLayer; i++)
 	{
-		int aux = 0;
+		float aux = 0;
 		for(int j=0; j<sizeInput; j++)
-			aux = weights[i][j]+in[j] + aux;
+			aux = weights[i][j]*in[j] + aux;
 		output.push_back(aux);
 	}
+}
+
+void NeuralNet::start(int array[size][size])
+{
+	vector<int> auxVec;
+	for(int i=0; i<size; i++)
+		for(int j=0; j<size; j++)
+			auxVec.push_back(array[i][j]);
+	start(auxVec);
 }
 
 void ClearScreen()
